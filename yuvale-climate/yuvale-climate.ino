@@ -1,18 +1,18 @@
-#include <SensorBox.h>   // SensorBox library (https://github.com/rovale/SensorBox)
-#include <ArduinoJson.h> // Take a version 5, not the version 6 beta
+#include <SimpleInternetThing.h> // SimpleInternetThing library (https://github.com/rovale/SimpleInternetThing)
+#include <ArduinoJson.h>         // Take a version 5, not the version 6 beta
 #include "DHTesp.h"
 
 #include <Secrets-vkv.h>
 
 const char mqttTopicBase[] = "yuvale/vkv";
-const char sensorId[] = "cte1";
-const char sensorName[] = "Ultra nerdy super duper floeper sloeper climate checker";
+const char id[] = "cte1";
+const char name[] = "Ultra nerdy super duper floeper sloeper climate checker";
 const char version[] = "0.0.2";
 
 const int indicatorLedPin = 25;
 
-SensorBox sensorBox(
-    mqttTopicBase, sensorId, sensorName, version,
+SimpleInternetThing sensorBox(
+    mqttTopicBase, id, name, version,
     ssid, wiFiPassword,
     mqttServer, 1883, mqttUsername, mqttPassword,
     indicatorLedPin);
@@ -30,7 +30,7 @@ void setup()
   Serial.begin(115200);
   Serial.println();
   Serial.print("Sensor ");
-  Serial.print(sensorId);
+  Serial.print(id);
   Serial.print(" version ");
   Serial.println(version);
 
@@ -78,6 +78,6 @@ void loop()
   if (millis() - lastTelemetryMessageAt >= 15000)
   {
     lastTelemetryMessageAt = millis();
-    sensorBox.publishTelemetryData("climate", getClimateMessage());
+    sensorBox.publishData("telemetry/climate", getClimateMessage());
   }
 }

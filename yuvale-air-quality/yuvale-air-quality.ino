@@ -1,19 +1,18 @@
-#include <SensorBox.h>   // SensorBox library (https://github.com/rovale/SensorBox)
-#include <ArduinoJson.h> // Take a version 5, not the version 6 beta
-
-#include <Wire.h>   // I2C library
-#include "ccs811.h" // CCS811 library (https://github.com/maarten-pennings/CCS811)
+#include <SimpleInternetThing.h> // SimpleInternetThing library (https://github.com/rovale/SimpleInternetThing)
+#include <ArduinoJson.h>         // Take a version 5, not the version 6 beta
+#include <Wire.h>                // I2C library
+#include "ccs811.h"              // CCS811 library (https://github.com/maarten-pennings/CCS811)
 
 #include <Secrets-vkv.h>
 
 const char mqttTopicBase[] = "yuvale/vkv";
-const char sensorId[] = "aqa1";
-const char sensorName[] = "Ultra nerdy super duper floeper sloeper air quality alarm";
+const char id[] = "aqa1";
+const char name[] = "Ultra nerdy super duper floeper sloeper air quality alarm";
 const char version[] = "0.0.1";
 const int indicatorLedPin = 25;
 
-SensorBox sensorBox(
-    mqttTopicBase, sensorId, sensorName, version,
+SimpleInternetThing aqa1(
+    mqttTopicBase, id, name, version,
     ssid, wiFiPassword,
     mqttServer, 1883, mqttUsername, mqttPassword,
     indicatorLedPin);
@@ -35,12 +34,12 @@ void setup()
   Serial.begin(115200);
   Serial.println();
   Serial.print("Sensor ");
-  Serial.print(sensorId);
+  Serial.print(id);
   Serial.print(" version ");
   Serial.println(version);
 
-  sensorBox.setup();
-  sensorBox.onCommand(onCommand);
+  aqa1.setup();
+  aqa1.onCommand(onCommand);
 
   Wire.begin(sdaPin, sclPin);
   bool ok = ccs811.begin();
@@ -113,7 +112,7 @@ void loop()
 {
   unsigned long currentMillis = millis();
 
-  sensorBox.loop();
+  aqa1.loop();
 
   if (currentMillis - lastLedUpdate >= 1000)
   {
@@ -160,7 +159,7 @@ void loop()
         unsigned long co2Sum = 0;
         unsigned long rawDataSum = 0;
         unsigned long tvocSum = 0;
-        for (int i=0; i < measurementCount; i++)
+        for (int i = 0; i < measurementCount; i++)
         {
           co2Sum += co2Values[i];
           rawDataSum += rawDataValues[i];
@@ -171,7 +170,7 @@ void loop()
         unsigned int tvocAverage = tvocSum / measurementCount;
 
         lastTelemetryMessageAt = currentMillis;
-        sensorBox.publishTelemetryData("climate", getClimateMessage(co2Average, tvocAverage, rawDataAverage));
+        aqa1.publishData("telemetry/climate", getClimateMessage(co2Average, tvocAverage, rawDataAverage));
 
         measurementCount = 0;
       }
