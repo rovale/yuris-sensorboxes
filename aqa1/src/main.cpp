@@ -8,7 +8,7 @@
 const char mqttTopicBase[] = "yuvale/vkv";
 const char id[] = "aqa1";
 const char name[] = "Ultra nerdy super duper floeper sloeper air quality alarm";
-const char version[] = "0.0.2";
+const char version[] = "0.0.4";
 const int indicatorLedPin = 25;
 
 SimpleInternetThing aqa1(
@@ -88,7 +88,7 @@ void setup()
   delay(1000);
 }
 
-String getClimateMessage(unsigned int co2, unsigned int tvoc, unsigned int raw)
+String getClimateMessage(unsigned int co2, unsigned int tvoc, unsigned int raw, unsigned int baseline)
 {
   StaticJsonBuffer<400> jsonBuffer;
   JsonObject &jsonObject = jsonBuffer.createObject();
@@ -97,6 +97,7 @@ String getClimateMessage(unsigned int co2, unsigned int tvoc, unsigned int raw)
   jsonObject["tvoc"] = tvoc;
   jsonObject["raw"] = raw;
   jsonObject["ccs811Updates"] = ccs811Updates;
+  jsonObject["baseline"] = baseline;
 
   String jsonString;
   jsonObject.printTo(jsonString);
@@ -168,8 +169,11 @@ void loop()
         unsigned int rawDataAverage = rawDataSum / measurementCount;
         unsigned int tvocAverage = tvocSum / measurementCount;
 
+        uint16_t baseline = 0;
+        ccs811.get_baseline(&baseline);
+
         lastTelemetryMessageAt = currentMillis;
-        aqa1.publishData("telemetry/climate", getClimateMessage(co2Average, tvocAverage, rawDataAverage));
+        aqa1.publishData("telemetry/climate", getClimateMessage(co2Average, tvocAverage, rawDataAverage, baseline));
 
         measurementCount = 0;
       }
